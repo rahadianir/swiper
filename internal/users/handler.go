@@ -125,7 +125,7 @@ func (handler *UserHandler) GetProfileByID(w http.ResponseWriter, r *http.Reques
 	}
 
 	xhttp.SendJSONResponse(w, models.BaseResponse{
-		Message: "logged in successfully",
+		Message: "profile fetched",
 		Data:    user,
 	}, http.StatusOK)
 }

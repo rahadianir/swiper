@@ -18,7 +18,9 @@ import (
 	"github.com/rahadianir/swiper/internal/auth"
 	"github.com/rahadianir/swiper/internal/common"
 	"github.com/rahadianir/swiper/internal/config"
+	"github.com/rahadianir/swiper/internal/pkg/cache"
 	mw "github.com/rahadianir/swiper/internal/pkg/middleware"
+	"github.com/rahadianir/swiper/internal/swiper"
 	"github.com/rahadianir/swiper/internal/users"
 	"github.com/redis/go-redis/v9"
 
@@ -56,15 +58,20 @@ func SetupDependencies(ctx context.Context) *common.Dependencies {
 }
 
 func InitRoutes(deps *common.Dependencies) http.Handler {
+	// wiring shared package layer
+	cacheStore := cache.NewCacheStore(deps)
+
 	// wiring up repository layer
 	userRepo := users.NewUserRepo(deps)
 
 	// wiring up logic layer
 	authLogic := auth.NewAuthLogic(deps)
 	userLogic := users.NewUserLogic(deps, userRepo, authLogic)
+	swiperLogic := swiper.NewSwiperLogic(deps, userRepo, cacheStore)
 
 	// wiring up handler layer
 	userHandler := users.NewUserHandler(deps, userLogic)
+	swiperHandler := swiper.NewSwiperHandler(deps, swiperLogic)
 
 	// init custom middlewares
 	authMiddleware := mw.AuthMiddleware{
@@ -88,6 +95,8 @@ func InitRoutes(deps *common.Dependencies) http.Handler {
 	r.Group(func(r chi.Router) {
 		r.Use(authMiddleware.ValidateToken)
 		r.Get("/profile/{id}", userHandler.GetProfileByID)
+
+		r.Get("/target", swiperHandler.GetTargetProfile)
 	})
 
 	return r

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/huandu/go-sqlbuilder"
 	"github.com/rahadianir/swiper/internal/common"
 	"github.com/rahadianir/swiper/internal/models"
 )
@@ -36,7 +37,7 @@ func (r *UserRepo) Register(ctx context.Context, user models.User) (int, error) 
 	return userID, nil
 }
 
-func (r UserRepo) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
+func (r *UserRepo) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
 	var user models.User
 	q := `SELECT
 			id, 
@@ -50,7 +51,7 @@ func (r UserRepo) GetUserByUsername(ctx context.Context, username string) (model
 			is_verified AS isverified, 
 			created_at AS createdat, 
 			updated_at AS updatedat, 
-			deleted_at as deletedat
+			deleted_at AS deletedat
 		FROM
 			users u
 		WHERE 
@@ -66,7 +67,7 @@ func (r UserRepo) GetUserByUsername(ctx context.Context, username string) (model
 	return user, nil
 }
 
-func (r UserRepo) GetUserByUserID(ctx context.Context, id string) (models.User, error) {
+func (r *UserRepo) GetUserByUserID(ctx context.Context, id string) (models.User, error) {
 	var user models.User
 	q := `SELECT
 			id, 
@@ -80,7 +81,7 @@ func (r UserRepo) GetUserByUserID(ctx context.Context, id string) (models.User, 
 			is_verified AS isverified, 
 			created_at AS createdat, 
 			updated_at AS updatedat, 
-			deleted_at as deletedat
+			deleted_at AS deletedat
 		FROM
 			users u
 		WHERE 
@@ -89,6 +90,44 @@ func (r UserRepo) GetUserByUserID(ctx context.Context, id string) (models.User, 
 			u.deleted_at ISNULL;`
 
 	err := r.DB.QueryRowxContext(ctx, q, id).StructScan(&user)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepo) GetRandomUser(ctx context.Context, excludeList []int) (models.User, error) {
+	var user models.User
+	q := sqlbuilder.
+		Select(`
+		id, 
+		name, 
+		username, 
+		password, 
+		age, 
+		gender, 
+		location, 
+		is_premium AS ispremium, 
+		is_verified AS isverified, 
+		created_at AS createdat, 
+		updated_at AS updatedat, 
+		deleted_at AS deletedat`,
+		).
+		From(`users u`).
+		Where(`u.deleted_at ISNULL`).
+		OrderBy(`RANDOM()`).
+		Limit(1)
+
+	if len(excludeList) > 0 {
+		q.Where(
+			q.NotIn(`id`, excludeList),
+		)
+	}
+
+	query, args := q.BuildWithFlavor(sqlbuilder.PostgreSQL)
+
+	err := r.DB.QueryRowxContext(ctx, query, args...).StructScan(&user)
 	if err != nil {
 		return models.User{}, err
 	}
