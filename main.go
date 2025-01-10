@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"context"
+
+	"github.com/rahadianir/swiper/internal/server"
+)
 
 func main() {
-	fmt.Println("first commit")
+	server.StartServer(context.Background())
 }
