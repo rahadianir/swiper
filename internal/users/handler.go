@@ -3,6 +3,7 @@ package users
 import (
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/rahadianir/swiper/internal/common"
 	"github.com/rahadianir/swiper/internal/models"
 	"github.com/rahadianir/swiper/internal/pkg/xerrors"
@@ -99,5 +100,32 @@ func (handler *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 			Token:        token,
 			RefreshToken: refreshToken,
 		},
-	}, http.StatusCreated)
+	}, http.StatusOK)
+}
+
+func (handler *UserHandler) GetProfileByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		xhttp.SendJSONResponse(w, models.BaseResponse{
+			Error:   "invalid id",
+			Message: "failed to parse request",
+			Data:    nil,
+		}, http.StatusBadRequest)
+		return
+	}
+
+	user, err := handler.UserLogic.GetProfileByID(r.Context(), id)
+	if err != nil {
+		xhttp.SendJSONResponse(w, models.BaseResponse{
+			Error:   err.Error(),
+			Message: "failed to get profile",
+			Data:    nil,
+		}, xerrors.ParseErrorTypeToCodeInt(err))
+		return
+	}
+
+	xhttp.SendJSONResponse(w, models.BaseResponse{
+		Message: "logged in successfully",
+		Data:    user,
+	}, http.StatusOK)
 }

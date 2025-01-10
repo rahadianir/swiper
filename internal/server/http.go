@@ -18,6 +18,7 @@ import (
 	"github.com/rahadianir/swiper/internal/auth"
 	"github.com/rahadianir/swiper/internal/common"
 	"github.com/rahadianir/swiper/internal/config"
+	mw "github.com/rahadianir/swiper/internal/pkg/middleware"
 	"github.com/rahadianir/swiper/internal/users"
 	"github.com/redis/go-redis/v9"
 
@@ -65,6 +66,11 @@ func InitRoutes(deps *common.Dependencies) http.Handler {
 	// wiring up handler layer
 	userHandler := users.NewUserHandler(deps, userLogic)
 
+	// init custom middlewares
+	authMiddleware := mw.AuthMiddleware{
+		Dependencies: deps,
+	}
+
 	r := chi.NewRouter()
 
 	// A good base middleware stack
@@ -79,6 +85,10 @@ func InitRoutes(deps *common.Dependencies) http.Handler {
 
 	r.Post("/signup", userHandler.Register)
 	r.Post("/signin", userHandler.Login)
+	r.Group(func(r chi.Router) {
+		r.Use(authMiddleware.ValidateToken)
+		r.Get("/profile/{id}", userHandler.GetProfileByID)
+	})
 
 	return r
 }

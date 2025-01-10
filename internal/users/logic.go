@@ -89,3 +89,12 @@ func (logic *UserLogic) Login(ctx context.Context, payload models.LoginRequest) 
 
 	return token, refreshToken, nil
 }
+
+func (logic *UserLogic) GetProfileByID(ctx context.Context, id string) (models.User, error) {
+	user, err := logic.UserRepo.GetUserByUserID(ctx, id)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
