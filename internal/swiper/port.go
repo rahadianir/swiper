@@ -19,4 +19,5 @@ type UserRepositoryInterface interface {
 type CacheInterface interface {
 	Get(ctx context.Context, key string) (string, error)
 	Set(ctx context.Context, key string, value any, ttl time.Duration) error
+	Update(ctx context.Context, key string, value any) error
 }

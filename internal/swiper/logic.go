@@ -35,7 +35,7 @@ func (logic *SwiperLogic) GetTargetProfile(ctx context.Context, userID int) (mod
 		return models.User{}, err
 	}
 
-	var cacheData models.LikesCache
+	var cacheData models.ActivityCache
 	// only parse cache data if exists
 	if cachedData != "" {
 		err = json.Unmarshal([]byte(cachedData), &cacheData)
@@ -50,7 +50,9 @@ func (logic *SwiperLogic) GetTargetProfile(ctx context.Context, userID int) (mod
 		return models.User{}, xerrors.ClientError{Err: fmt.Errorf("activity limit reached")}
 	}
 
-	viewedProfiles := append(cacheData.Pass, cacheData.Likes...)
+	viewedProfiles := []int{userID} // to prevent viewing user's own profile
+	viewedProfiles = append(viewedProfiles, cacheData.Pass...)
+	viewedProfiles = append(viewedProfiles, cacheData.Likes...)
 
 	targetProfile, err := logic.UserRepo.GetRandomUser(ctx, viewedProfiles)
 	if err != nil {
@@ -61,5 +63,25 @@ func (logic *SwiperLogic) GetTargetProfile(ctx context.Context, userID int) (mod
 }
 
 func (logic *SwiperLogic) SwipeRight(ctx context.Context, userID int, targetId int) error {
+	// id := strconv.Itoa(userID)
+	targetID := strconv.Itoa(targetId)
+
+	// check match
+	isMatch := checkMatch(targetId, []int{})
+	if isMatch {
+		// TODO: broadcast match and initiate chat room or some shit
+		slog.InfoContext(ctx, "ciee match", slog.Any("user_id", userID), slog.Any("target_id", targetID))
+	}
+
 	return nil
+}
+
+func checkMatch(userID int, likedBy []int) bool {
+	for _, id := range likedBy {
+		if id == userID {
+			return true
+		}
+	}
+
+	return false
 }

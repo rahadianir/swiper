@@ -32,3 +32,9 @@ func (c *CacheStore) Set(ctx context.Context, key string, value any, ttl time.Du
 	log.Println(res, err)
 	return err
 }
+
+func (c *CacheStore) Update(ctx context.Context, key string, value any) error {
+	res, err := c.RedisClient.SetArgs(ctx, key, value, redis.SetArgs{KeepTTL: true}).Result()
+	log.Println(res, err)
+	return err
+}

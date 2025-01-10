@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/huandu/go-sqlbuilder"
+	"github.com/lib/pq"
 	"github.com/rahadianir/swiper/internal/common"
 	"github.com/rahadianir/swiper/internal/models"
 )
@@ -99,35 +99,31 @@ func (r *UserRepo) GetUserByUserID(ctx context.Context, id string) (models.User,
 
 func (r *UserRepo) GetRandomUser(ctx context.Context, excludeList []int) (models.User, error) {
 	var user models.User
-	q := sqlbuilder.
-		Select(`
-		id, 
-		name, 
-		username, 
-		password, 
-		age, 
-		gender, 
-		location, 
-		is_premium AS ispremium, 
-		is_verified AS isverified, 
-		created_at AS createdat, 
-		updated_at AS updatedat, 
-		deleted_at AS deletedat`,
-		).
-		From(`users u`).
-		Where(`u.deleted_at ISNULL`).
-		OrderBy(`RANDOM()`).
-		Limit(1)
+	q := `SELECT
+			id, 
+			name, 
+			username, 
+			password, 
+			age, 
+			gender, 
+			location, 
+			is_premium AS ispremium, 
+			is_verified AS isverified, 
+			created_at AS createdat, 
+			updated_at AS updatedat, 
+			deleted_at AS deletedat
+		FROM
+			users u
+		WHERE 
+			u.id <> ALL($1)
+			AND
+			u.deleted_at ISNULL
+		ORDER BY 
+			RANDOM()
+		LIMIT 
+			1;`
 
-	if len(excludeList) > 0 {
-		q.Where(
-			q.NotIn(`id`, excludeList),
-		)
-	}
-
-	query, args := q.BuildWithFlavor(sqlbuilder.PostgreSQL)
-
-	err := r.DB.QueryRowxContext(ctx, query, args...).StructScan(&user)
+	err := r.DB.QueryRowxContext(ctx, q, pq.Array(excludeList)).StructScan(&user)
 	if err != nil {
 		return models.User{}, err
 	}
