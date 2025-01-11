@@ -99,6 +99,7 @@ func InitRoutes(deps *common.Dependencies) http.Handler {
 
 		r.Get("/queue", swiperHandler.GetTargetProfile)
 		r.Post("/swipe/right/{id}", swiperHandler.SwipeRight)
+		r.Post("/swipe/left/{id}", swiperHandler.SwipeLeft)
 	})
 
 	return r

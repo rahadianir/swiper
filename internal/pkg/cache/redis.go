@@ -3,7 +3,6 @@ package cache
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"reflect"
 	"time"
 
@@ -37,8 +36,8 @@ func (c *CacheStore) Set(ctx context.Context, key string, value any, ttl time.Du
 		}
 		value = string(valueBytes)
 	}
-	res, err := c.RedisClient.Set(ctx, key, value, ttl).Result()
-	log.Println(res, err)
+	_, err := c.RedisClient.Set(ctx, key, value, ttl).Result()
+
 	return err
 }
 
@@ -50,7 +49,7 @@ func (c *CacheStore) Update(ctx context.Context, key string, value any) error {
 		}
 		value = string(valueBytes)
 	}
-	res, err := c.RedisClient.SetArgs(ctx, key, value, redis.SetArgs{KeepTTL: true}).Result()
-	log.Println(res, err)
+	_, err := c.RedisClient.SetArgs(ctx, key, value, redis.SetArgs{KeepTTL: true}).Result()
+
 	return err
 }

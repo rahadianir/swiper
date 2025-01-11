@@ -146,3 +146,48 @@ func checkMatch(userID int, likedBy []int) bool {
 
 	return false
 }
+
+func (logic *SwiperLogic) SwipeLeft(ctx context.Context, userID int, targetId int) error {
+	// convert id from int to string for cachestore
+	id := strconv.Itoa(userID)
+
+	// get cached likes data
+	cachedData, err := logic.CacheStore.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	var cacheData models.ActivityCache
+	isUserNewActivity := true
+	// only parse cache data if exists
+	if cachedData != "" {
+		err = json.Unmarshal([]byte(cachedData), &cacheData)
+		if err != nil {
+			slog.ErrorContext(ctx, "failed to parse cache data", slog.Any("error", err))
+			return err
+		}
+		isUserNewActivity = false
+	}
+
+	// if user already swiped 10x in 24 hours, return error
+	// TODO: bypass this with premium
+	totalActivity := len(cacheData.Pass) + len(cacheData.Likes)
+	if totalActivity >= 10 {
+		return xerrors.ClientError{Err: fmt.Errorf("activity limit reached")}
+	}
+
+	cacheData.Pass = append(cacheData.Pass, targetId)
+	if isUserNewActivity {
+		err := logic.CacheStore.Set(ctx, id, cacheData, (24 * time.Hour))
+		if err != nil {
+			slog.WarnContext(ctx, "failed to store cache data", slog.Any("error", err))
+		}
+	} else {
+		err := logic.CacheStore.Update(ctx, id, cacheData)
+		if err != nil {
+			slog.WarnContext(ctx, "failed to updates cache data", slog.Any("error", err))
+		}
+	}
+
+	return nil
+}

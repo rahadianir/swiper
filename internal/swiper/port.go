@@ -10,6 +10,7 @@ import (
 type SwiperLogicInterface interface {
 	GetTargetProfile(ctx context.Context, userID int) (models.User, error)
 	SwipeRight(ctx context.Context, userID int, targetId int) (bool, error)
+	SwipeLeft(ctx context.Context, userID int, targetId int) error
 }
 
 type SwiperRepositoryInterface interface {
