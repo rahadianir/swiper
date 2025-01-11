@@ -64,3 +64,20 @@ func (r *SwipeRepo) StoreUserLike(ctx context.Context, userID int, targetID int)
 
 	return nil
 }
+
+func (r *SwipeRepo) UpdateMatchStatus(ctx context.Context, userID int, targetID int, status bool) error {
+	q := `UPDATE swipes
+			SET
+				is_matched = $1,
+				updated_at = now()
+			WHERE
+				(user_id = $2 and target_id = $3)
+				OR
+				(user_id = $3 and target_id = $2);`
+	_, err := r.DB.Exec(q, status, userID, targetID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

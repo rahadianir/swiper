@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS "swipes" (
     "target_id" INTEGER NOT NULL,
     "is_matched" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ NOT NULL,
+    "updated_at" TIMESTAMPTZ,
     CONSTRAINT fk_user_id FOREIGN KEY(user_id) 
 	  REFERENCES users(id)
 	  ON DELETE CASCADE,

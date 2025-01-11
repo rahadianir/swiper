@@ -20,6 +20,7 @@ import (
 	"github.com/rahadianir/swiper/internal/config"
 	"github.com/rahadianir/swiper/internal/pkg/cache"
 	mw "github.com/rahadianir/swiper/internal/pkg/middleware"
+	"github.com/rahadianir/swiper/internal/premium"
 	"github.com/rahadianir/swiper/internal/swiper"
 	"github.com/rahadianir/swiper/internal/users"
 	"github.com/redis/go-redis/v9"
@@ -64,15 +65,18 @@ func InitRoutes(deps *common.Dependencies) http.Handler {
 	// wiring up repository layer
 	userRepo := users.NewUserRepo(deps)
 	swiperRepo := swiper.NewSwipeRepo(deps)
+	premiumRepo := premium.NewPremiumRepo(deps)
 
 	// wiring up logic layer
 	authLogic := auth.NewAuthLogic(deps)
 	userLogic := users.NewUserLogic(deps, userRepo, authLogic)
 	swiperLogic := swiper.NewSwiperLogic(deps, userRepo, cacheStore, swiperRepo)
+	premiumLogic := premium.NewPremiumLogic(deps, premiumRepo)
 
 	// wiring up handler layer
 	userHandler := users.NewUserHandler(deps, userLogic)
 	swiperHandler := swiper.NewSwiperHandler(deps, swiperLogic)
+	premiumHandler := premium.NewPremiumHandler(deps, premiumLogic)
 
 	// init custom middlewares
 	authMiddleware := mw.AuthMiddleware{
@@ -100,6 +104,8 @@ func InitRoutes(deps *common.Dependencies) http.Handler {
 		r.Get("/queue", swiperHandler.GetTargetProfile)
 		r.Post("/swipe/right/{id}", swiperHandler.SwipeRight)
 		r.Post("/swipe/left/{id}", swiperHandler.SwipeLeft)
+
+		r.Post("/premium", premiumHandler.EnablePremium)
 	})
 
 	return r

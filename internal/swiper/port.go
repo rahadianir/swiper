@@ -16,10 +16,11 @@ type SwiperLogicInterface interface {
 type SwiperRepositoryInterface interface {
 	StoreUserLike(ctx context.Context, userID int, targetID int) error
 	GetUserLikedUserIDs(ctx context.Context, userID int, params models.LikedUserParams) ([]int, error)
+	UpdateMatchStatus(ctx context.Context, userID int, targetID int, status bool) error
 }
 
 type UserRepositoryInterface interface {
-	GetUserByUserID(ctx context.Context, id string) (models.User, error)
+	GetUserByUserID(ctx context.Context, id int) (models.User, error)
 	GetRandomUser(ctx context.Context, excludeList []int) (models.User, error)
 }
 

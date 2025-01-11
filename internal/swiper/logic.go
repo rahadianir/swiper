@@ -94,10 +94,13 @@ func (logic *SwiperLogic) SwipeRight(ctx context.Context, userID int, targetId i
 		isUserNewActivity = false
 	}
 
-	// if user already swiped 10x in 24 hours, return error
-	// TODO: bypass this with premium
+	// if user not premium and already swiped 10x in 24 hours, return error
+	user, err := logic.UserRepo.GetUserByUserID(ctx, userID)
+	if err != nil {
+		return false, err
+	}
 	totalActivity := len(cacheData.Pass) + len(cacheData.Likes)
-	if totalActivity >= 10 {
+	if totalActivity >= 10 && !user.IsPremium {
 		return false, xerrors.ClientError{Err: fmt.Errorf("activity limit reached")}
 	}
 
@@ -130,7 +133,10 @@ func (logic *SwiperLogic) SwipeRight(ctx context.Context, userID int, targetId i
 	// check whether userid is in target likes
 	isMatch := checkMatch(userID, targetLikes)
 	if isMatch {
-		// TODO: broadcast match and initiate chat room or some shit
+		err := logic.SwiperRepo.UpdateMatchStatus(ctx, userID, targetId, isMatch)
+		if err != nil {
+			return isMatch, err
+		}
 		slog.InfoContext(ctx, "ciee match", slog.Any("user_id", userID), slog.Any("target_id", targetID))
 	}
 
@@ -169,10 +175,13 @@ func (logic *SwiperLogic) SwipeLeft(ctx context.Context, userID int, targetId in
 		isUserNewActivity = false
 	}
 
-	// if user already swiped 10x in 24 hours, return error
-	// TODO: bypass this with premium
+	// if user not premium and already swiped 10x in 24 hours, return error
+	user, err := logic.UserRepo.GetUserByUserID(ctx, userID)
+	if err != nil {
+		return err
+	}
 	totalActivity := len(cacheData.Pass) + len(cacheData.Likes)
-	if totalActivity >= 10 {
+	if totalActivity >= 10 && !user.IsPremium {
 		return xerrors.ClientError{Err: fmt.Errorf("activity limit reached")}
 	}
 

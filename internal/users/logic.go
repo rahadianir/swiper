@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 
 	"github.com/rahadianir/swiper/internal/common"
@@ -91,10 +92,13 @@ func (logic *UserLogic) Login(ctx context.Context, payload models.LoginRequest) 
 }
 
 func (logic *UserLogic) GetProfileByID(ctx context.Context, id string) (models.User, error) {
-	user, err := logic.UserRepo.GetUserByUserID(ctx, id)
+	idInt, _ := strconv.Atoi(id)
+	user, err := logic.UserRepo.GetUserByUserID(ctx, idInt)
 	if err != nil {
 		return models.User{}, err
 	}
+	// remove password from response
+	user.Password = ""
 
 	return user, nil
 }

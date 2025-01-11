@@ -9,7 +9,7 @@ import (
 type UserRepositoryInterface interface {
 	Register(ctx context.Context, user models.User) (int, error)
 	GetUserByUsername(ctx context.Context, username string) (models.User, error)
-	GetUserByUserID(ctx context.Context, id string) (models.User, error)
+	GetUserByUserID(ctx context.Context, id int) (models.User, error)
 }
 
 type UserLogicInterface interface {

@@ -12,7 +12,7 @@ type User struct {
 	Location   string     `json:"string,omitempty"`
 	IsPremium  bool       `json:"is_premium,omitempty"`
 	IsVerified bool       `json:"is_verified,omitempty"`
-	CreatedAt  time.Time  `json:"created_at"`
+	CreatedAt  time.Time  `json:"created_at,omitempty"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
 }

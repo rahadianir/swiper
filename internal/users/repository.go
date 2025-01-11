@@ -67,7 +67,7 @@ func (r *UserRepo) GetUserByUsername(ctx context.Context, username string) (mode
 	return user, nil
 }
 
-func (r *UserRepo) GetUserByUserID(ctx context.Context, id string) (models.User, error) {
+func (r *UserRepo) GetUserByUserID(ctx context.Context, id int) (models.User, error) {
 	var user models.User
 	q := `SELECT
 			id, 
@@ -102,8 +102,7 @@ func (r *UserRepo) GetRandomUser(ctx context.Context, excludeList []int) (models
 	q := `SELECT
 			id, 
 			name, 
-			username, 
-			password, 
+			username,  
 			age, 
 			gender, 
 			location, 
