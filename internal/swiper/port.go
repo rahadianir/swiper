@@ -6,7 +6,7 @@ import (
 
 	"github.com/rahadianir/swiper/internal/models"
 )
-
+//go:generate mockgen -source port.go -destination mock/mock_port.go
 type SwiperLogicInterface interface {
 	GetTargetProfile(ctx context.Context, userID int) (models.User, error)
 	SwipeRight(ctx context.Context, userID int, targetId int) (bool, error)

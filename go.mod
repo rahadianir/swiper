@@ -23,6 +23,7 @@ require (
 	github.com/huandu/go-sqlbuilder v1.33.1 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	go.uber.org/mock v0.5.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
