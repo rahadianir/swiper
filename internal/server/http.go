@@ -63,11 +63,12 @@ func InitRoutes(deps *common.Dependencies) http.Handler {
 
 	// wiring up repository layer
 	userRepo := users.NewUserRepo(deps)
+	swiperRepo := swiper.NewSwipeRepo(deps)
 
 	// wiring up logic layer
 	authLogic := auth.NewAuthLogic(deps)
 	userLogic := users.NewUserLogic(deps, userRepo, authLogic)
-	swiperLogic := swiper.NewSwiperLogic(deps, userRepo, cacheStore)
+	swiperLogic := swiper.NewSwiperLogic(deps, userRepo, cacheStore, swiperRepo)
 
 	// wiring up handler layer
 	userHandler := users.NewUserHandler(deps, userLogic)
@@ -96,7 +97,8 @@ func InitRoutes(deps *common.Dependencies) http.Handler {
 		r.Use(authMiddleware.ValidateToken)
 		r.Get("/profile/{id}", userHandler.GetProfileByID)
 
-		r.Get("/target", swiperHandler.GetTargetProfile)
+		r.Get("/queue", swiperHandler.GetTargetProfile)
+		r.Post("/swipe/right/{id}", swiperHandler.SwipeRight)
 	})
 
 	return r

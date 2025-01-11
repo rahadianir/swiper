@@ -2,7 +2,9 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"log"
+	"reflect"
 	"time"
 
 	"github.com/rahadianir/swiper/internal/common"
@@ -28,12 +30,26 @@ func (c *CacheStore) Get(ctx context.Context, key string) (string, error) {
 }
 
 func (c *CacheStore) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
+	if reflect.TypeOf(value).Kind() == reflect.Struct {
+		valueBytes, err := json.Marshal(value)
+		if err != nil {
+			return err
+		}
+		value = string(valueBytes)
+	}
 	res, err := c.RedisClient.Set(ctx, key, value, ttl).Result()
 	log.Println(res, err)
 	return err
 }
 
 func (c *CacheStore) Update(ctx context.Context, key string, value any) error {
+	if reflect.TypeOf(value).Kind() == reflect.Struct {
+		valueBytes, err := json.Marshal(value)
+		if err != nil {
+			return err
+		}
+		value = string(valueBytes)
+	}
 	res, err := c.RedisClient.SetArgs(ctx, key, value, redis.SetArgs{KeepTTL: true}).Result()
 	log.Println(res, err)
 	return err

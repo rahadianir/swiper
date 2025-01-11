@@ -9,6 +9,12 @@ import (
 
 type SwiperLogicInterface interface {
 	GetTargetProfile(ctx context.Context, userID int) (models.User, error)
+	SwipeRight(ctx context.Context, userID int, targetId int) (bool, error)
+}
+
+type SwiperRepositoryInterface interface {
+	StoreUserLike(ctx context.Context, userID int, targetID int) error
+	GetUserLikedUserIDs(ctx context.Context, userID int, params models.LikedUserParams) ([]int, error)
 }
 
 type UserRepositoryInterface interface {
