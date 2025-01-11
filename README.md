@@ -40,7 +40,7 @@
     
     Copy example environment file with
     ```bash
-    cp .env.example env
+    cp .env.example .env
     ```
     and update the values accordingly.
 3. **Install Dependencies**
