@@ -55,6 +55,7 @@ func (logic *UserLogic) Register(ctx context.Context, payload models.RegisterReq
 		Location:   payload.Location,
 		IsPremium:  false, // default
 		IsVerified: false, // default
+		Gender:     payload.Gender,
 	}
 	userID, err := logic.UserRepo.Register(ctx, user)
 	if err != nil {
